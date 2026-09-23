@@ -1,7 +1,65 @@
-import { ImageIcon, Upload } from "lucide-react";
+import { AlertCircle, ImageIcon, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { UploadStatus } from "@/types";
+import { useDropzone } from "react-dropzone";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { uploadImageToCloudinary } from "@/cloudinary/upload-direct";
+import type { CloudinaryUploadResult } from "@/cloudinary/UploadWidget";
 
-export function UploadCard() {
+interface UploadCardProps {
+  uploadStatus: UploadStatus;
+  uploadError: string | null;
+  onUploadError: (error: Error) => void;
+  onUploadStart: () => void;
+  onUploadSuccess: (result: CloudinaryUploadResult) => void;
+}
+
+const ACCEPT = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/webp": [".webp"],
+};
+
+export function UploadCard({
+  uploadStatus,
+  onUploadError,
+  onUploadStart,
+  uploadError,
+  onUploadSuccess,
+}: UploadCardProps) {
+  const [progress, setProgress] = useState<number>(0);
+
+  const handleUploadFile = async (file: File) => {
+    onUploadStart();
+    setProgress(0);
+    try {
+      const result = await uploadImageToCloudinary(file);
+      onUploadSuccess(result);
+    } catch (error) {
+      onUploadError(new Error("Upload filed."));
+    }
+  };
+
+  const onDrop = (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) {
+      onUploadError(new Error("Please upload a JPG, PNG, or WEBP image."));
+      return;
+    }
+
+    handleUploadFile(acceptedFiles[0]);
+  };
+
+  const { open, getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: ACCEPT,
+    disabled: uploadStatus === "uploading",
+    maxFiles: 1,
+    multiple: false,
+  });
+
+  const isUploading = uploadStatus === "uploading";
+
   return (
     <section id="upload" className="px-4 py-10">
       <div className="mx-auto max-w-3xl">
@@ -16,8 +74,14 @@ export function UploadCard() {
         </div>
 
         <label
+          {...getRootProps()}
           htmlFor="selfie-upload"
-          className="group relative flex min-h-80 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/3 p-8 text-center transition-all hover:border-white/30 hover:bg-white/5"
+          className={cn(
+            "group relative flex min-h-80 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/3 p-8 text-center transition-all",
+            "hover:border-white/30 hover:bg-white/5",
+            isDragActive && "hover:border-white/30 hover:bg-white/5",
+            isUploading && "pointer-events-none opacity-60",
+          )}
         >
           <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/3 blur-3xl transition-all group-hover:bg-white/6" />
 
@@ -53,7 +117,21 @@ export function UploadCard() {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             className="sr-only"
+            {...getInputProps()}
           />
+
+          {isUploading && (
+            <div className="mt-2">
+              <p>Uploading... {progress > 0 ? `${progress}%` : ""}</p>
+            </div>
+          )}
+
+          {uploadError && (
+            <div className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {uploadError}
+            </div>
+          )}
         </label>
 
         <p className="mt-4 text-center text-xs text-white/30">

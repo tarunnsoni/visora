@@ -1,7 +1,16 @@
 import { Hero } from "@/components/hero";
 import { UploadCard } from "@/components/upload-card";
+import { useHeadshot } from "@/hooks/useHeadshot";
 
 export function Home() {
+  const {
+    uploadStatus,
+    uploadError,
+    handlerUploadStart,
+    handleUploadError,
+    handleUploadSuccess,
+  } = useHeadshot();
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-white/10 px-4 py-4">
@@ -14,7 +23,13 @@ export function Home() {
 
       <Hero />
 
-      <UploadCard />
+      <UploadCard
+        onUploadError={handleUploadError}
+        onUploadStart={handlerUploadStart}
+        onUploadSuccess={handleUploadSuccess}
+        uploadError={uploadError}
+        uploadStatus={uploadStatus}
+      />
     </div>
   );
 }

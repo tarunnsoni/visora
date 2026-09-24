@@ -31,18 +31,16 @@ export function Hero() {
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button
             size="lg"
+            onClick={() => {
+              document.getElementById("upload")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
             className="h-12 rounded-xl bg-white px-7 text-sm font-medium text-black shadow-lg shadow-white/10 transition-all hover:bg-white/90 hover:shadow-white/20"
           >
             Upload Your Selfie
             <ArrowUpRight className="ml-1 h-4 w-4" />
-          </Button>
-
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-12 rounded-xl border-white/10 bg-white/3 px-7 text-sm text-white/70 hover:bg-white/[0.07] hover:text-white"
-          >
-            See Examples
           </Button>
         </div>
 

@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { uploadImageToCloudinary } from "@/cloudinary/upload-direct";
-import type { CloudinaryUploadResult } from "@/cloudinary/UploadWidget";
+import { type CloudinaryUploadResult } from "@/cloudinary/UploadWidget";
 
 interface UploadCardProps {
   uploadStatus: UploadStatus;
@@ -36,6 +36,12 @@ export function UploadCard({
     try {
       const result = await uploadImageToCloudinary(file);
       onUploadSuccess(result);
+      setTimeout(() => {
+        document.getElementById("upload")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 1000);
     } catch (error) {
       onUploadError(new Error("Upload filed."));
     }
@@ -50,7 +56,7 @@ export function UploadCard({
     handleUploadFile(acceptedFiles[0]);
   };
 
-  const { open, getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPT,
     disabled: uploadStatus === "uploading",
@@ -127,7 +133,7 @@ export function UploadCard({
           )}
 
           {uploadError && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {uploadError}
             </div>
